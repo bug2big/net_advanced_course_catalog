@@ -1,10 +1,10 @@
 ﻿using CatalogService.Domain.Common;
 
-namespace CatalogService.Application.Common
+namespace CatalogService.Application.Common.Interfaces
 {
-    public interface IApplicationDbContext<TEntity> where TEntity : BaseEntity
+    public interface IDbContextProvider<TEntity> where TEntity : BaseEntity
     {
-        DbSet<TEntity> Entities { get; set; }
+        DbSet<TEntity> DbSet { get; }
 
         Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default);
 

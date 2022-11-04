@@ -9,7 +9,7 @@
     }
   },
   "profiles": {
-    "LayeredArchitecturesTask1": {
+    "CatalogService": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,

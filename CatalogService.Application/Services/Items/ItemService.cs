@@ -1,50 +1,64 @@
-﻿using CatalogService.Application.Common;
+﻿using CatalogService.Application.ApiModels;
 using CatalogService.Application.Common.Exceptions;
+using CatalogService.Application.Common.Interfaces;
 using CatalogService.Domain.Entities;
 
-namespace CatalogService.Application.Services.Items
+namespace CatalogService.Application.Services.Items;
+
+public class ItemService : IItemService
 {
-    public class ItemService : IItemService
+    private readonly IDbContextProvider<Item> _dbContextProvider;
+    private readonly IMapper _mapper;
+
+    public ItemService(
+        IDbContextProvider<Item> dbContextProvider,
+        IMapper mapper)
     {
-        private readonly IApplicationDbContext<Item> _applicationDbContext;
+        _dbContextProvider = dbContextProvider;
+        _mapper = mapper;
+    }
 
-        public ItemService(IApplicationDbContext<Item> applicationDbContext)
+    public async Task<ItemDto> GetByIdAsync(Guid itemId, CancellationToken cancellationToken = default)
+    {
+        var entity = await _dbContextProvider
+            .DbSet
+            .FirstOrDefaultAsync(i => i.Id == itemId, cancellationToken);
+
+        if (entity == null)
         {
-            _applicationDbContext = applicationDbContext;
+            throw new NotFoundException(nameof(Item), itemId);
         }
 
-        public async Task<Item> GetByIdAsync(Guid itemId, CancellationToken cancellationToken = default)
+        return _mapper.Map<ItemDto>(entity);
+    }
+
+    public async Task<IEnumerable<ItemDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var items = await _dbContextProvider.DbSet.ToListAsync(cancellationToken);
+        return _mapper.Map<IEnumerable<ItemDto>>(items);
+    }
+
+    public async Task UpdateAsync(ItemDto itemDto, CancellationToken cancellationToken = default)
+    {
+        var item = _mapper.Map<Item>(itemDto);
+        await _dbContextProvider.UpdateAsync(item, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Guid itemId, CancellationToken cancellationToken = default)
+    {
+        var item = await _dbContextProvider.DbSet.FirstOrDefaultAsync(c => c.Id == itemId, cancellationToken);
+
+        if (item == null)
         {
-            var entity =  await _applicationDbContext
-                .Entities
-                .FirstOrDefaultAsync(i => i.Id == itemId, cancellationToken);
-
-            if (entity == null)
-            {
-                throw new NotFoundException(nameof(Item), itemId);
-            }
-
-            return entity;
+            throw new NotFoundException(nameof(Category), itemId);
         }
 
-        public async Task<IEnumerable<Item>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            return await _applicationDbContext.Entities.ToListAsync(cancellationToken);
-        }
+        await _dbContextProvider.DeleteAsync(item, cancellationToken);
+    }
 
-        public async Task UpdateAsync(Item item, CancellationToken cancellationToken = default)
-        {
-            await _applicationDbContext.UpdateAsync(item, cancellationToken);
-        }
-
-        public async Task DeleteAsync(Item item, CancellationToken cancellationToken = default)
-        {
-            await _applicationDbContext.DeleteAsync(item, cancellationToken);
-        }
-
-        public async Task AddAsync(Item item, CancellationToken cancellationToken = default)
-        {
-            await _applicationDbContext.AddAsync(item, cancellationToken);
-        }
+    public async Task AddAsync(ItemDto itemDto, CancellationToken cancellationToken = default)
+    {
+        var item = _mapper.Map<Item>(itemDto);
+        await _dbContextProvider.AddAsync(item, cancellationToken);
     }
 }

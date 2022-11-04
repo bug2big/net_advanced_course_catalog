@@ -1,17 +1,16 @@
-﻿using CatalogService.Domain.Entities;
+﻿using CatalogService.Application.ApiModels;
 
-namespace CatalogService.Application.Services.Categories
+namespace CatalogService.Application.Services.Categories;
+
+public interface ICategoryService
 {
-    public interface ICategoryService
-    {
-        Task<Category> GetByIdAsync(Guid categoryId, CancellationToken cancellationToken = default);
+    Task<CategoryDto> GetByIdAsync(Guid categoryId, CancellationToken cancellationToken = default);
 
-        Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IEnumerable<CategoryDto>> GetAllAsync(CancellationToken cancellationToken = default);
 
-        Task UpdateAsync(Category category, CancellationToken cancellationToken = default);
+    Task UpdateAsync(CategoryDto category, CancellationToken cancellationToken = default);
 
-        Task DeleteAsync(Category category, CancellationToken cancellationToken = default);
+    Task DeleteAsync(Guid categoryId, CancellationToken cancellationToken = default);
 
-        Task AddAsync(Category category, CancellationToken cancellationToken = default);
-    }
+    Task AddAsync(CategoryDto category, CancellationToken cancellationToken = default);
 }
