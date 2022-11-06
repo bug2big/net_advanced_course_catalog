@@ -1,10 +1,13 @@
 using CatalogService.Application.Services.Items;
 using CatalogService.Application.ApiModels;
+using CatalogService.Application.Common.Exceptions;
 
 namespace net_advanced_course.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[ProducesResponseType(StatusCodes.Status200OK)]
+[ProducesResponseType(StatusCodes.Status404NotFound)]
 public class ItemController : ControllerBase
 {
     private readonly IItemService _itemService;
@@ -17,7 +20,14 @@ public class ItemController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        return Ok(await _itemService.GetByIdAsync(id, cancellationToken));
+        try
+        {
+            return Ok(await _itemService.GetByIdAsync(id, cancellationToken));
+        }
+        catch (NotFoundException ex) 
+        {
+            return NotFound(ex.Message);
+        }
     }
 
     [HttpGet]

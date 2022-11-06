@@ -1,11 +1,13 @@
 using CatalogService.Application.Services.Categories;
 using CatalogService.Application.ApiModels;
+using CatalogService.Application.Common.Exceptions;
 
 namespace CatalogService.WebApi.Controllers;
 
 [ApiController]
 [Route("[controller]")]
 [ProducesResponseType(StatusCodes.Status200OK)]
+[ProducesResponseType(StatusCodes.Status404NotFound)]
 public class CategoryController : ControllerBase
 {
     private readonly ICategoryService _categoryService;
@@ -18,7 +20,14 @@ public class CategoryController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> GetByIdAsync(Guid id, CancellationToken cancellationToken) 
     {
-        return Ok(await _categoryService.GetByIdAsync(id, cancellationToken));
+        try
+        {
+            return Ok(await _categoryService.GetByIdAsync(id, cancellationToken));
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
     }
     
     [HttpGet]
