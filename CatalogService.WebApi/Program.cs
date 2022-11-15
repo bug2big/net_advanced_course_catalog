@@ -15,21 +15,23 @@ namespace CatalogService.WebApi
             var configuration = configurationBuilder.Build();
             
             builder.Configuration.AddConfiguration(configuration);
-
-            builder.Services.AddApplicationServices();
+            builder.Services.AddMapper();
             builder.Services.AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddApplicationServices();
 
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
-
             
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "v1");
+                });
             }
 
             app.UseHttpsRedirection();

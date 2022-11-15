@@ -1,8 +1,7 @@
-﻿namespace CatalogService.Domain.Common
+﻿namespace CatalogService.Domain.Common;
+
+public class BaseEntity
 {
-    public class BaseEntity
-    {
-        [Required()]
-        public Guid Id { get; set; }
-    }
+    [Required()]
+    public Guid Id { get; set; }
 }

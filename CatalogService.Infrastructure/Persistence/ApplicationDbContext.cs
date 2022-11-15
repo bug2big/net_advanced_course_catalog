@@ -1,34 +1,24 @@
-﻿using CatalogService.Application.Common;
-using CatalogService.Domain.Common;
+﻿namespace CatalogService.Infrastructure.Persistence;
 
-namespace CatalogService.Infrastructure.Persistence
+public class ApplicationDbContext : DbContext
 {
-    public class ApplicationDbContext<TEntity> : DbContext, IApplicationDbContext<TEntity> where TEntity : BaseEntity
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+        : base(options)
     {
-        public DbSet<TEntity> Entities { get; set; }
-
-        public ApplicationDbContext(DbContextOptions options)
-            : base(options)
-        {
-            Entities = Set<TEntity>();
-        }
-
-        public async Task UpdateAsync(TEntity entity, CancellationToken cancellationToken = default)
-        {
-            base.Update(entity);
-            await base.SaveChangesAsync(cancellationToken);
-        }
-
-        public async Task DeleteAsync(TEntity entity, CancellationToken cancellationToken = default)
-        {
-            base.Remove(entity);
-            await base.SaveChangesAsync(cancellationToken);
-        }
-
-        public async Task AddAsync(TEntity entity, CancellationToken cancellationToken = default)
-        {
-            await base.AddAsync(entity, cancellationToken);
-            await base.SaveChangesAsync(cancellationToken);
-        }
+        Database.EnsureCreated();
+        Database.Migrate();
     }
+
+    //protected readonly IConfiguration Configuration;
+
+    //public ApplicationDbContext(IConfiguration configuration)
+    //{
+    //    Configuration = configuration;
+    //}
+
+    //protected override void OnConfiguring(DbContextOptionsBuilder options)
+    //{
+    //    // connect to sqlite database
+    //    options.UseSqlite(Configuration.GetConnectionString("WebApiDatabase"));
+    //}
 }

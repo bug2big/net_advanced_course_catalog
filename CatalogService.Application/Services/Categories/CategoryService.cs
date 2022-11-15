@@ -1,50 +1,68 @@
-﻿using CatalogService.Application.Common;
+﻿using CatalogService.Application.ApiModels;
 using CatalogService.Application.Common.Exceptions;
+using CatalogService.Application.Common.Interfaces;
 using CatalogService.Domain.Entities;
 
-namespace CatalogService.Application.Services.Categories
+namespace CatalogService.Application.Services.Categories;
+
+public class CategoryService : ICategoryService
 {
-    public class CategoryService : ICategoryService
+    private readonly IMapper _mapper;
+    private readonly IDbContextProvider<Category> _dbContextProvider;
+
+    public CategoryService(
+        IMapper mapper,
+        IDbContextProvider<Category> dbContextProvider)
     {
-        private readonly IApplicationDbContext<Category> _applicationDbContext;
+        _dbContextProvider = dbContextProvider;
+        _mapper = mapper;
+    }
 
-        public CategoryService(IApplicationDbContext<Category> applicationDbContext)
+    public async Task<CategoryDto> GetByIdAsync(Guid categoryId, CancellationToken cancellationToken = default)
+    {
+        var entity = await _dbContextProvider
+            .DbSet
+            .FirstOrDefaultAsync(c => c.Id == categoryId, cancellationToken);
+
+        if (entity == null)
         {
-            _applicationDbContext = applicationDbContext;
+            throw new NotFoundException(nameof(Category), categoryId);
         }
 
-        public async Task<Category> GetByIdAsync(Guid categoryId, CancellationToken cancellationToken = default)
+        return _mapper.Map<CategoryDto>(entity);
+    }
+
+    public async Task<IEnumerable<CategoryDto>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        var categories = await _dbContextProvider.DbSet.ToListAsync(cancellationToken);
+
+        var categoryDtos = _mapper.Map<IEnumerable<CategoryDto>>(categories);
+
+        return categoryDtos;
+    }
+
+    public async Task UpdateAsync(CategoryDto categoryDto, CancellationToken cancellationToken = default)
+    {
+        var category = _mapper.Map<Category>(categoryDto);
+        await _dbContextProvider.UpdateAsync(category, cancellationToken);
+    }
+
+    public async Task DeleteAsync(Guid categoryId, CancellationToken cancellationToken = default)
+    {
+        var category = await _dbContextProvider.DbSet.FirstOrDefaultAsync(c => c.Id == categoryId, cancellationToken);
+
+        if (category == null) 
         {
-            var entity = await _applicationDbContext
-                    .Entities
-                    .FirstOrDefaultAsync(c => c.Id == categoryId, cancellationToken);
-
-            if (entity == null)
-            {
-                throw new NotFoundException(nameof(Category), categoryId);
-            }
-
-            return entity;
+            throw new NotFoundException(nameof(Category), categoryId);
         }
 
-        public async Task<IEnumerable<Category>> GetAllAsync(CancellationToken cancellationToken = default)
-        {
-            return await _applicationDbContext.Entities.ToListAsync(cancellationToken);
-        }
+        await _dbContextProvider.DeleteAsync(category, cancellationToken);
+    }
 
-        public async Task UpdateAsync(Category category, CancellationToken cancellationToken = default)
-        {
-            await _applicationDbContext.UpdateAsync(category, cancellationToken);
-        }
-
-        public async Task DeleteAsync(Category category, CancellationToken cancellationToken = default)
-        {
-            await _applicationDbContext.DeleteAsync(category, cancellationToken);
-        }
-
-        public async Task AddAsync(Category category, CancellationToken cancellationToken = default)
-        {
-            await _applicationDbContext.AddAsync(category, cancellationToken);
-        }
+    public async Task AddAsync(CategoryDto categoryDto, CancellationToken cancellationToken = default)
+    {
+        var category = _mapper.Map<Category>(categoryDto);
+        await _dbContextProvider.AddAsync(category, cancellationToken);
     }
 }
+

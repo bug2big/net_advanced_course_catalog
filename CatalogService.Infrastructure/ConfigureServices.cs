@@ -1,21 +1,16 @@
-﻿using CatalogService.Application.Common;
-using CatalogService.Domain.Common;
+﻿using CatalogService.Application.Common.Interfaces;
 using CatalogService.Infrastructure.Persistence;
 
-namespace CatalogService.Infrastructure
+namespace CatalogService.Infrastructure;
+
+public static class ConfigureServices
 {
-    public static class ConfigureServices
+    public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
     {
-        public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
-        {
-            services.AddDbContext<ApplicationDbContext<BaseEntity>>(options =>
-                    options.UseSqlServer(configuration.GetConnectionString("DefaultConnection"),
-                        builder => builder.MigrationsAssembly(typeof(ApplicationDbContext<BaseEntity>).Assembly.FullName)));
-
-
-            services.AddScoped<IApplicationDbContext<BaseEntity>>(provider => provider.GetRequiredService<ApplicationDbContext<BaseEntity>>());
-
-            return services;
-        }
+        services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
+        
+        services.AddScoped(typeof(IDbContextProvider<>), typeof(DbContextProvider<>));
+        return services;
     }
 }
