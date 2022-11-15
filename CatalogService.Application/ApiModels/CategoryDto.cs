@@ -6,8 +6,8 @@
 
         public string Name { get; set; } = null!;
 
-        public string? Image { get; set; }
+        public string? Image { get; set; } = null;
 
-        public Guid? ParentCategoryId { get; set; }
+        public Guid? ParentCategoryId { get; set; } = null;
     }
 }
